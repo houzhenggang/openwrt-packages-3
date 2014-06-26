@@ -1,0 +1,66 @@
+#
+# Copyright (C) 2006-2009 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
+
+PKG_NAME:=mt7610
+
+PKG_REV:=2714
+PKG_VERSION:=r$(PKG_REV)
+PKG_RELEASE:=6
+
+PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+
+include $(INCLUDE_DIR)/package.mk
+
+PKG_KCONFIG:=MT7610_AP_V24_DATA_STRUCTURE MT7610_AP_LED MT7610_AP_WSC MT7610_AP_WSC_V2 MT7610_AP_LLTD MT7610_AP_WDS MT7610_AP_WMM_ACM MT7610_AP_MBSS MT7610_AP_APCLI MT7610_AP_MAC_REPEATER MT7610_AP_IGMP_SNOOP MT7610_AP_NETIF_BLOCK MT7610_AP_DFS MT7610_AP_CARRIER MT7610_AP_DLS MT7610_AP_IDS MT7610_HW_ANTENNA_DIVERSITY MT7610_AP_WAPI MT7610_AP_COC MT7610_AP_MEMORY_OPTIMIZATION MT7610_AP_VIDEO_TURBINE MT7610_AP_INTELLIGENT_RATE_ADAPTION MT7610_AP_TXBF MT7610_EXT_CHANNEL_LIST MT7610_KTHREAD MT7610_AUTO_CH_SELECT_ENHANCE MT7610_AP_80211N_DRAFT3 MT7610_AP_RTMP_INTERNAL_TX_ALC MT7610_ADJ_PWR_CONSUMPTION_SUPPORT MT7610_SINGLE_SKU MT7610_AP_RTMP_INTERNAL_TX_ALC MT7610_AP_RTMP_TEMPERATURE_COMPENSATION MT7610_80211R_FT MT7610_80211R_RR MT7610_MCAST_RATE_SPECIFIC MT7610_SNMP RA_CLASSIFIER
+
+define KernelPackage/mt7610
+  CATEGORY:=MT7620
+  TITLE:=Driver for MT7620
+  DEPENDS:=@TARGET_ramips +wireless-tools +maccalc
+  DEFAULT:=y if (CONFIG_TARGET_ramips_mt7620n || CONFIG_TARGET_ramips_mt7620a)
+  FILES:=$(PKG_BUILD_DIR)/mt7610_ap/mt7610_ap.ko
+  AUTOLOAD:=$(call AutoLoad,50,mt7610_ap)
+endef
+
+define KernelPackage/mt7610/description
+ This package contains a driver for MT7620
+endef
+
+define KernelPackage/mt7610/config
+	source "$(SOURCE)/config.in"
+endef
+
+SOURCE_DIR:=$(PKG_BUILD_DIR)
+export SOURCE_DIR
+
+MAKEOPTS:= -C $(LINUX_DIR) \
+                ARCH="$(LINUX_KARCH)" \
+                CROSS_COMPILE="$(TARGET_CROSS)" \
+                M="$(PKG_BUILD_DIR)/mt7610_ap" \
+                CONFIG_MT7610_AP=m \
+		$(foreach c, $(PKG_KCONFIG),$(if $(CONFIG_$c),CONFIG_$(c)=y)) \
+		modules
+
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(CP) -r files/. $(PKG_BUILD_DIR)
+endef
+
+
+define Build/Compile
+	$(MAKE) $(MAKEOPTS)
+endef
+
+define KernelPackage/mt7610/install
+	$(INSTALL_DIR) $(1)/lib/wifi
+	$(INSTALL_DATA) ./files/mt7610.sh $(1)/lib/wifi
+endef
+
+$(eval $(call KernelPackage,mt7610))
