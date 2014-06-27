@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# by lintel@gmail.com, hoowa.sun@gmail.com
+# by lintel@gmail.com, hoowa.sun@gmail.com, jon@suphammer.net
 #
 
 append DRIVERS "rt5592"
@@ -140,7 +140,7 @@ done
 	;;
     esac
 
-	cat > /tmp/RT2860.dat<<EOF
+	cat > /tmp/iNIC.dat<<EOF
 #The word of "Default" must not be removed
 Default
 CountryRegion=0
@@ -413,11 +413,11 @@ EOF
 }
 
 reload_rt5592() {
-	ifconfig ra0 down
+	ifconfig rai0 down
 	rmmod rt5592_ap 
 
 	insmod rt5592_ap
-	ifconfig ra0 up
+	ifconfig rai0 up
 }
 
 scan_rt5592() {
@@ -448,7 +448,7 @@ enable_rt5592() {
 	
 	config_get_bool disabled "$device" disabled 0	
 	if [ "$disabled" = "1" ] ;then
-	ifconfig ra0 down
+	ifconfig rai0 down
 	return
 	fi
 	
@@ -466,8 +466,8 @@ enable_rt5592() {
 		config_get ifname $vif device	
 		
 		# According to configure multiple SSID number ifname
-		[ "$ifname" == "ra0" ] && {
-		ifname="ra$if_num"
+		[ "$ifname" == "rai0" ] && {
+		ifname="rai$if_num"
 		}
 		let if_num+=1
 		# Excluded if set to apcli0
@@ -660,9 +660,6 @@ enable_rt5592() {
 				}
 				
 			}
-
-
-
 		}
 		fi;
 		set_wifi_up "$vif" "$ifname"
@@ -683,9 +680,9 @@ enable_rt5592() {
 
 first_enable() {
 
-ifconfig ra0 down
+ifconfig rai0 down
 
-	cat > /tmp/RT2860.dat<<EOF
+	cat > /tmp/iNIC.dat<<EOF
 #The word of "Default" must not be removed
 Default
 CountryRegion=0
@@ -948,7 +945,7 @@ Key3Str=
 Key4Str=
 EOF
 
-ifconfig ra0 up
+ifconfig rai0 up
 }
 
 # Detect_rt5592 function for detecting the presence or absence of the driver
@@ -958,20 +955,20 @@ detect_rt5592() {
 	cd /sys/module/
 	[ -d rt5592_ap ] || return
 # How many wifi presence detection system interfaces
-	while grep -qs "^ *ra$((++i)):" /proc/net/dev; do
-		config_get type ra${i} type
+	while grep -qs "^ *rai$((++i)):" /proc/net/dev; do
+		config_get type rai${i} type
 		[ "$type" = rt5592 ] && continue
 		
 # Check the drive configuration and creates a WiFi link
-	[ -f /etc/Wireless/RT2860/RT2860.dat ] || {
-	mkdir -p /etc/Wireless/RT2860/
-	ln -s /tmp/RT2860.dat /etc/Wireless/RT2860/RT2860.dat
+	[ -f /etc/Wireless/iNIC/iNIC_ap.dat ] || {
+	mkdir -p /etc/Wireless/iNIC/
+	ln -s /tmp/iNIC.dat /etc/Wireless/iNIC/iNIC_ap.dat
 	}
 	
 	first_enable
 	
 		cat <<EOF
-config wifi-device  ra${i}
+config wifi-device  rai${i}
 	option type     rt5592
 	option mode 	9
 	option channel  auto
@@ -982,16 +979,14 @@ config wifi-device  ra${i}
 	option disabled 0	
 	
 config wifi-iface
-	option device   ra${i}
+	option device   rai${i}
 	option network	lan
 	option mode     ap
-	option ssid     PandoraBox${i#0}_$(cat /sys/class/net/ra${i}/address|awk -F ":" '{print $4""$5""$6 }'| tr a-z A-Z)
+	option ssid     PandoraBox${i#0}_$(cat /sys/class/net/rai${i}/address|awk -F ":" '{print $4""$5""$6 }'| tr a-z A-Z)
 	option encryption none
 EOF
 
-	ifconfig ra0 down 
+	ifconfig rai0 down
 	done
 	
 }
-
-
