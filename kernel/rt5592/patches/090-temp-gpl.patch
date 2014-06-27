@@ -1,0 +1,20 @@
+Index: RT5592_Linux_SoftAP_v2.7.x.x/rt5592/os/linux/pci_main_dev.c
+===================================================================
+--- RT5592_Linux_SoftAP_v2.7.x.x.orig/rt5592/os/linux/pci_main_dev.c
++++ RT5592_Linux_SoftAP_v2.7.x.x/rt5592/os/linux/pci_main_dev.c
+@@ -521,4 +521,4 @@ static VOID __devexit rt2860_remove_one(
+ 	wl_proc_exit();
+ }
+ 
+-MODULE_LICENSE("Proprietary");
++MODULE_LICENSE("GPL");
+Index: RT5592_Linux_SoftAP_v2.7.x.x/rt5592/os/linux/rt_flash.c
+===================================================================
+--- RT5592_Linux_SoftAP_v2.7.x.x.orig/rt5592/os/linux/rt_flash.c
++++ RT5592_Linux_SoftAP_v2.7.x.x/rt5592/os/linux/rt_flash.c
+@@ -129,4 +129,4 @@ EXPORT_SYMBOL(procRegDir);
+ 
+ MODULE_AUTHOR("Steven Liu <steven_liu@ralinktech.com.tw>");
+ MODULE_DESCRIPTION("Ralink APSoC Flash Map");
+-MODULE_LICENSE("Properitary");
++MODULE_LICENSE("GPL");

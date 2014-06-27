@@ -1,0 +1,68 @@
+#
+# Copyright (C) 2006-2009 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
+
+PKG_NAME:=RT5592_Linux_SoftAP
+PKG_VERSION:=v2.7.x.x
+PKG_RELEASE:=1
+
+PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=http://openwrt.i.ign.as/src
+PKG_MD5SUM:=2d1e44373f8d5a3ed47f982317f4c40e
+
+PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)_$(PKG_VERSION)
+
+include $(INCLUDE_DIR)/package.mk
+
+PKG_KCONFIG:=RT5592_AP_V24_DATA_STRUCTURE RT5592_AP_LED RT5592_AP_WSC RT5592_AP_WSC_V2 RT5592_AP_LLTD RT5592_AP_WDS RT5592_AP_WMM_ACM RT5592_AP_MBSS RT5592_AP_APCLI RT5592_AP_MAC_REPEATER RT5592_AP_IGMP_SNOOP RT5592_AP_NETIF_BLOCK RT5592_AP_DFS RT5592_AP_CARRIER RT5592_AP_DLS RT5592_AP_IDS RT5592_HW_ANTENNA_DIVERSITY RT5592_AP_WAPI RT5592_AP_COC RT5592_AP_MEMORY_OPTIMIZATION RT5592_AP_VIDEO_TURBINE RT5592_AP_INTELLIGENT_RATE_ADAPTION RT5592_AP_TXBF RT5592_EXT_CHANNEL_LIST RT5592_KTHREAD RT5592_AUTO_CH_SELECT_ENHANCE RT5592_AP_80211N_DRAFT3 RT5592_AP_RTMP_INTERNAL_TX_ALC RT5592_ADJ_PWR_CONSUMPTION_SUPPORT RT5592_SINGLE_SKU RT5592_AP_RTMP_INTERNAL_TX_ALC RT5592_AP_RTMP_TEMPERATURE_COMPENSATION RT5592_80211R_FT RT5592_80211R_RR RT5592_MCAST_RATE_SPECIFIC RT5592_SNMP RA_CLASSIFIER
+
+define KernelPackage/rt5592
+  CATEGORY:=MT7620
+  TITLE:=Driver for MT7620
+  DEPENDS:=@TARGET_ramips +wireless-tools +maccalc
+  DEFAULT:=y if (CONFIG_TARGET_ramips_mt7620n || CONFIG_TARGET_ramips_mt7620a)
+  FILES:=$(PKG_BUILD_DIR)/rt5592_ap/rt5592_ap.ko
+  AUTOLOAD:=$(call AutoLoad,50,rt5592_ap)
+endef
+
+define KernelPackage/rt5592/description
+ This package contains a driver for MT7620
+endef
+
+define KernelPackage/rt5592/config
+	source "$(SOURCE)/config.in"
+endef
+
+SOURCE_DIR:=$(PKG_BUILD_DIR)
+export SOURCE_DIR
+
+MAKEOPTS:= -C $(LINUX_DIR) \
+                ARCH="$(LINUX_KARCH)" \
+                CROSS_COMPILE="$(TARGET_CROSS)" \
+                M="$(PKG_BUILD_DIR)/rt5592_ap" \
+                CONFIG_RT5592_AP=m \
+		$(foreach c, $(PKG_KCONFIG),$(if $(CONFIG_$c),CONFIG_$(c)=y)) \
+		modules
+
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(CP) -r files/. $(PKG_BUILD_DIR)
+endef
+
+
+define Build/Compile
+	$(MAKE) $(MAKEOPTS)
+endef
+
+define KernelPackage/rt5592/install
+	$(INSTALL_DIR) $(1)/lib/wifi
+	$(INSTALL_DATA) ./files/rt5592.sh $(1)/lib/wifi
+endef
+
+$(eval $(call KernelPackage,rt5592))

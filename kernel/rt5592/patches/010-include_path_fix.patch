@@ -1,0 +1,13 @@
+Index: RT5592_Linux_SoftAP_v2.7.x.x/rt5592_ap/Makefile
+===================================================================
+--- RT5592_Linux_SoftAP_v2.7.x.x.orig/rt5592_ap/Makefile
++++ RT5592_Linux_SoftAP_v2.7.x.x/rt5592_ap/Makefile
+@@ -1,6 +1,6 @@
+-EXTRA_CFLAGS = -Idrivers/net/wireless/rt5592/include
++EXTRA_CFLAGS = -I$(SOURCE_DIR)/rt5592/include
+ ifeq ($(CONFIG_RT5592_AP_ATE),y)
+-EXTRA_CFLAGS += -Idrivers/net/wireless/rt5592/ate/include
++EXTRA_CFLAGS += -I$(SOURCE_DIR)/rt5592/ate/include
+ endif
+ 
+ obj-$(CONFIG_RT5592_AP) += rt5592_ap.o
